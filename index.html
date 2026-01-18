@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QUİZİ GAME</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            color: #fff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animated Background */
+        .bg-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: float-particle 20s linear infinite;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.15;
+            }
+
+            90% {
+                opacity: 0.15;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Welcome Screen */
+        #welcomeScreen {
+            text-align: center;
+        }
+
+        .welcome-logo {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.1);
+            }
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 10px;
+        }
+
+        @keyframes gradient-shift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 50px;
+            font-weight: 600;
+        }
+
+        .welcome-btn {
+            padding: 20px 60px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .welcome-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .welcome-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.7);
+        }
+
+        .welcome-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Game Screen Header */
+        .game-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-small {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #667eea, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .points-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        /* Game Grid Screen */
+        #gameScreen {
+            padding-top: 80px;
+            padding-bottom: 100px;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            max-width: 400px;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .level-box {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-box.unlocked {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .level-box.unlocked:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7);
+        }
+
+        .level-box.unlocked::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .level-box.unlocked:hover::before {
+            opacity: 1;
+        }
+
+        .level-box.locked {
+            background: rgba(100, 100, 130, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+        }
+
+        .level-box.completed {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            box-shadow: 0 4px 20px rgba(46, 204, 113, 0.5);
+        }
+
+        .level-box.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+
+        .lock-icon {
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px 15px;
+            border-radius: 12px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Question Screen */
+        #questionScreen {
+            padding-top: 80px;
+            padding-bottom: 20px;
+        }
+
+        .question-container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #f39c12;
+            padding: 8px 16px;
+            background: rgba(243, 156, 18, 0.15);
+            border-radius: 20px;
+        }
+
+        .timer.warning {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .timer.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .difficulty-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .difficulty-easy {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .difficulty-medium {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .difficulty-hard {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .difficulty-expert {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 18px 25px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.05rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option:hover:not(.disabled) {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            transform: translateX(10px);
+        }
+
+        .option.correct {
+            background: rgba(46, 204, 113, 0.3);
+            border-color: #2ecc71;
+            animation: correct-pulse 0.5s ease;
+        }
+
+        .option.wrong {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+            animation: shake 0.5s ease;
+        }
+
+        .option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .option.eliminated {
+            opacity: 0.3;
+            text-decoration: line-through;
+            pointer-events: none;
+        }
+
+        @keyframes correct-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .option-letter {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Joker Buttons */
+        .jokers-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .joker-btn {
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .joker-btn:hover:not(:disabled) {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            transform: translateY(-3px);
+        }
+
+        .joker-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .joker-count {
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        /* Shop Screen */
+        #shopScreen {
+            padding-top: 80px;
+            padding-bottom: 100px;
+        }
+
+        .shop-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .shop-title {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .shop-items {
+            display: grid;
+            gap: 15px;
+        }
+
+        .shop-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .shop-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-3px);
+        }
+
+        .shop-item-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shop-item-icon {
+            font-size: 2.5rem;
+        }
+
+        .shop-item-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+
+        .shop-item-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .shop-item-owned {
+            color: #2ecc71;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .buy-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .buy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Result Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: modal-pop 0.3s ease;
+        }
+
+        @keyframes modal-pop {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-emoji {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .result-title.success {
+            color: #2ecc71;
+        }
+
+        .result-title.fail {
+            color: #e74c3c;
+        }
+
+        .result-points {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .result-points.positive {
+            color: #f39c12;
+        }
+
+        .result-points.negative {
+            color: #e74c3c;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border: 2px solid #2ecc71;
+        }
+
+        .toast.error {
+            border: 2px solid #e74c3c;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .welcome-title {
+                font-size: 2.2rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .welcome-btn {
+                padding: 18px 40px;
+                font-size: 1.1rem;
+            }
+
+            .levels-grid {
+                gap: 8px;
+            }
+
+            .level-box {
+                font-size: 1rem;
+                border-radius: 12px;
+            }
+
+            .question-container {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .option {
+                padding: 15px 18px;
+                font-size: 0.95rem;
+            }
+
+            .joker-btn {
+                padding: 10px 14px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            top: -20px;
+            font-size: 2rem;
+            animation: fall-confetti 3s linear forwards;
+            z-index: 250;
+        }
+
+        @keyframes fall-confetti {
+            to {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="screen active">
+        <div class="welcome-logo">🎯</div>
+        <h1 class="welcome-title">QUİZİ GAME</h1>
+        <p class="welcome-subtitle">Hoşgeldiniz!</p>
+        <button class="welcome-btn" onclick="startGame()">
+            🎮 Oyuna Gir
+        </button>
+    </div>
+
+    <!-- Game Screen (Level Grid) -->
+    <div id="gameScreen" class="screen">
+        <div class="game-header">
+            <span class="logo-small">QUİZİ</span>
+            <div class="points-display">
+                <span>⭐</span>
+                <span id="pointsDisplay">0</span>
+            </div>
+        </div>
+
+        <h2 class="game-title">📚 Sorular</h2>
+        <div class="levels-grid" id="levelsGrid"></div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showScreen('gameScreen')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Ana Menü</span>
+            </div>
+            <div class="nav-item" onclick="showScreen('shopScreen')">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-label">Mağaza</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="questionScreen" class="screen">
+        <div class="game-header">
+            <button class="modal-btn secondary" onclick="goToMenu()" style="padding: 10px 20px;">
+                ← Geri
+            </button>
+            <div class="points-display">
+                <span>⭐</span>
+                <span id="questionPointsDisplay">0</span>
+            </div>
+        </div>
+
+        <div class="question-container">
+            <div class="question-header">
+                <span class="question-number" id="questionNumber">Soru 1</span>
+                <span class="difficulty-badge difficulty-easy" id="difficultyBadge">Kolay</span>
+            </div>
+            <div class="timer" id="timer">
+                <span>⏰</span>
+                <span id="timerValue">30</span>
+            </div>
+            <p class="question-text" id="questionText">Soru yükleniyor...</p>
+            <div class="options-grid" id="optionsGrid"></div>
+
+            <div class="jokers-row">
+                <button class="joker-btn" id="jokerFifty" onclick="useFiftyFifty()">
+                    🎯 %50 <span class="joker-count" id="fiftyCount">0</span>
+                </button>
+                <button class="joker-btn" id="jokerSkip" onclick="useSkip()">
+                    ⏭️ Pas <span class="joker-count" id="skipCount">0</span>
+                </button>
+                <button class="joker-btn" id="jokerTime" onclick="useExtraTime()">
+                    ⏰ +30sn <span class="joker-count" id="timeCount">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div id="shopScreen" class="screen">
+        <div class="game-header">
+            <span class="logo-small">QUİZİ</span>
+            <div class="points-display">
+                <span>⭐</span>
+                <span id="shopPointsDisplay">0</span>
+            </div>
+        </div>
+
+        <div class="shop-container">
+            <h2 class="shop-title">🛒 Joker Mağazası</h2>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <div class="shop-item-info">
+                        <span class="shop-item-icon">🎯</span>
+                        <div>
+                            <div class="shop-item-name">%50 Joker</div>
+                            <div class="shop-item-desc">2 yanlış şıkkı eler</div>
+                            <div class="shop-item-owned">Sahip: <span id="ownedFifty">0</span></div>
+                        </div>
+                    </div>
+                    <button class="buy-btn" onclick="buyJoker('fifty', 80)">
+                        ⭐ 80
+                    </button>
+                </div>
+                <div class="shop-item">
+                    <div class="shop-item-info">
+                        <span class="shop-item-icon">⏭️</span>
+                        <div>
+                            <div class="shop-item-name">Pas Geçme</div>
+                            <div class="shop-item-desc">Soruyu atla, sonrakine geç</div>
+                            <div class="shop-item-owned">Sahip: <span id="ownedSkip">0</span></div>
+                        </div>
+                    </div>
+                    <button class="buy-btn" onclick="buyJoker('skip', 100)">
+                        ⭐ 100
+                    </button>
+                </div>
+                <div class="shop-item">
+                    <div class="shop-item-info">
+                        <span class="shop-item-icon">⏰</span>
+                        <div>
+                            <div class="shop-item-name">Ekstra Süre</div>
+                            <div class="shop-item-desc">+30 saniye ekle</div>
+                            <div class="shop-item-owned">Sahip: <span id="ownedTime">0</span></div>
+                        </div>
+                    </div>
+                    <button class="buy-btn" onclick="buyJoker('time', 60)">
+                        ⭐ 60
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="showScreen('gameScreen')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Ana Menü</span>
+            </div>
+            <div class="nav-item active" onclick="showScreen('shopScreen')">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-label">Mağaza</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="result-emoji" id="resultEmoji">🎉</div>
+            <h2 class="result-title" id="resultTitle">Doğru!</h2>
+            <p class="result-points" id="resultPoints">+10 Puan</p>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" id="nextBtn" onclick="nextQuestion()">
+                    Sonraki Soruya Geç
+                </button>
+                <button class="modal-btn secondary" onclick="retryQuestion()">
+                    Tekrar Oyna
+                </button>
+                <button class="modal-btn secondary" onclick="goToMenu()">
+                    Ana Menüye Dön
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Game State
+        let gameState = {
+            points: 0,
+            currentLevel: 0,
+            completedLevels: [],
+            jokers: {
+                fifty: 0,
+                skip: 0,
+                time: 0
+            }
+        };
+
+        let currentQuestion = null;
+        let timerInterval = null;
+        let timeLeft = 30;
+        let answeredCorrectly = false;
+
+        // Questions Database - 50 soruluk veritabanı
+        const questions = [
+            // 1-10: Kolay sorular (10 puan)
+            { q: "Türkiye'nin başkenti neresidir?", options: ["İstanbul", "Ankara", "İzmir", "Bursa"], correct: 1 },
+            { q: "2 + 2 kaç eder?", options: ["3", "4", "5", "6"], correct: 1 },
+            { q: "Güneş hangi yönden doğar?", options: ["Batı", "Kuzey", "Doğu", "Güney"], correct: 2 },
+            { q: "Bir haftada kaç gün vardır?", options: ["5", "6", "7", "8"], correct: 2 },
+            { q: "Dünyanın en büyük okyanusu hangisidir?", options: ["Atlantik", "Hint", "Pasifik", "Arktik"], correct: 2 },
+            { q: "İnsan vücudunda kaç kemik vardır?", options: ["186", "206", "226", "246"], correct: 1 },
+            { q: "H2O neyin formülüdür?", options: ["Tuz", "Su", "Şeker", "Alkol"], correct: 1 },
+            { q: "Türk bayrağının rengi nedir?", options: ["Mavi-Beyaz", "Kırmızı-Beyaz", "Yeşil-Beyaz", "Sarı-Kırmızı"], correct: 1 },
+            { q: "Bir yılda kaç ay vardır?", options: ["10", "11", "12", "13"], correct: 2 },
+            { q: "Pizza hangi ülkeye aittir?", options: ["Fransa", "İspanya", "İtalya", "Yunanistan"], correct: 2 },
+
+            // 11-20: Orta sorular (20 puan)
+            { q: "Osmanlı İmparatorluğu hangi yılda kuruldu?", options: ["1299", "1326", "1453", "1520"], correct: 0 },
+            { q: "Dünyanın en uzun nehri hangisidir?", options: ["Amazon", "Nil", "Ganj", "Mississippi"], correct: 1 },
+            { q: "Einstein'ın ünlü formülü nedir?", options: ["E=mc²", "F=ma", "a²+b²=c²", "PV=nRT"], correct: 0 },
+            { q: "İlk bilgisayar hangi yılda icat edildi?", options: ["1936", "1946", "1956", "1966"], correct: 1 },
+            { q: "DNA açılımı nedir?", options: ["Deoksiribonükleik Asit", "Dinamik Nükleer Asit", "Dijital Nöral Ağ", "Doğal Nitrojen Asiti"], correct: 0 },
+            { q: "Ay'a ilk ayak basan astronot kimdir?", options: ["Buzz Aldrin", "Neil Armstrong", "Yuri Gagarin", "John Glenn"], correct: 1 },
+            { q: "Mona Lisa tablosu hangi müzede sergilenir?", options: ["British Museum", "Louvre", "Prado", "Uffizi"], correct: 1 },
+            { q: "Işık hızı saniyede yaklaşık kaç km'dir?", options: ["200.000", "300.000", "400.000", "500.000"], correct: 1 },
+            { q: "Periyodik tabloda kaç element vardır?", options: ["108", "118", "128", "138"], correct: 1 },
+            { q: "Türkiye'nin en yüksek dağı hangisidir?", options: ["Uludağ", "Erciyes", "Ağrı", "Kaçkar"], correct: 2 },
+
+            // 21-35: Zor sorular (30 puan)
+            { q: "Kuantum mekaniğinin kurucusu kimdir?", options: ["Einstein", "Max Planck", "Bohr", "Heisenberg"], correct: 1 },
+            { q: "İstanbul'un fethi hangi yıldadır?", options: ["1450", "1451", "1452", "1453"], correct: 3 },
+            { q: "Pi sayısının ilk 5 basamağı nedir?", options: ["3.1415", "3.1416", "3.1417", "3.1418"], correct: 0 },
+            { q: "Mitokondri hücrede ne üretir?", options: ["Protein", "ATP", "DNA", "RNA"], correct: 1 },
+            { q: "Shakespeare hangi yüzyılda yaşadı?", options: ["15. yy", "16-17. yy", "17-18. yy", "18. yy"], correct: 1 },
+            { q: "Altının atom numarası kaçtır?", options: ["47", "79", "82", "92"], correct: 1 },
+            { q: "Hangi gezegen en hızlı döner?", options: ["Mars", "Jüpiter", "Satürn", "Uranüs"], correct: 1 },
+            { q: "İlk antibiyotik hangisidir?", options: ["Streptomisin", "Penisilin", "Tetrasiklin", "Ampisilin"], correct: 1 },
+            { q: "Rönesans hangi şehirde başladı?", options: ["Roma", "Floransa", "Venedik", "Milano"], correct: 1 },
+            { q: "1 parsek kaç ışık yılıdır?", options: ["1.26", "2.26", "3.26", "4.26"], correct: 2 },
+            { q: "Hangi vitamin eksikliği skorbüte neden olur?", options: ["A", "B12", "C", "D"], correct: 2 },
+            { q: "En eski yazı sistemi hangisidir?", options: ["Hiyeroglif", "Çivi yazısı", "Latin", "Fenike"], correct: 1 },
+            { q: "Süpernova nedir?", options: ["Galaksi", "Yıldız patlaması", "Kara delik", "Gezegen"], correct: 1 },
+            { q: "Hangi element en hafiftir?", options: ["Helyum", "Hidrojen", "Lityum", "Karbon"], correct: 1 },
+            { q: "Magna Carta hangi yılda imzalandı?", options: ["1115", "1215", "1315", "1415"], correct: 1 },
+
+            // 36-50: Uzman sorular (50 puan)
+            { q: "Heisenberg belirsizlik ilkesi neyi ifade eder?", options: ["Kütle-enerji", "Konum-momentum", "Zaman-uzay", "Dalga-parçacık"], correct: 1 },
+            { q: "Riemann hipotezi hangi matematiksel kavramla ilgilidir?", options: ["Asal sayılar", "Pi sayısı", "Altın oran", "Euler sayısı"], correct: 0 },
+            { q: "Hawking radyasyonu nereden yayılır?", options: ["Güneş", "Nötron yıldızı", "Kara delik", "Pulsar"], correct: 2 },
+            { q: "CRISPR teknolojisi ne için kullanılır?", options: ["Yapay zeka", "Gen düzenleme", "Kuantum hesaplama", "Nükleer enerji"], correct: 1 },
+            { q: "Schrödinger'in kedisi hangi kavramı açıklar?", options: ["Rölativite", "Süperpozisyon", "Entropi", "Kütleçekim"], correct: 1 },
+            { q: "String teorisi kaç boyut öngörür?", options: ["4", "8", "10-11", "26"], correct: 2 },
+            { q: "Fermat'ın son teoremi hangi yıl kanıtlandı?", options: ["1985", "1990", "1995", "2000"], correct: 2 },
+            { q: "Planck sabiti neyi ölçer?", options: ["Kütle", "Enerji kuantumu", "Hız", "Uzaklık"], correct: 1 },
+            { q: "Karanlık madde evrenin yüzde kaçını oluşturur?", options: ["~5%", "~15%", "~27%", "~68%"], correct: 2 },
+            { q: "Nötrino hangi kuvvetten etkilenir?", options: ["Elektromanyetik", "Güçlü nükleer", "Zayıf nükleer", "Kütleçekim"], correct: 2 },
+            { q: "Gödel'in eksiklik teoremleri neyi ispatlar?", options: ["Matematiğin tutarsızlığı", "Aksiyom sistemlerinin sınırlılığı", "Sonsuzun varlığı", "Sayıların gerçekliği"], correct: 1 },
+            { q: "Penrose çinileri hangi özelliğe sahiptir?", options: ["Simetrik", "Periyodik olmayan", "Fraktal", "Altıgen"], correct: 1 },
+            { q: "Higgs bozonu hangi yıl keşfedildi?", options: ["2008", "2010", "2012", "2014"], correct: 2 },
+            { q: "Kuantum dolanıklık ne sağlar?", options: ["Işık hızı iletişim", "Anlık korelasyon", "Zaman yolculuğu", "Kütle transferi"], correct: 1 },
+            { q: "Evrenin yaşı yaklaşık kaç milyar yıldır?", options: ["10.8", "13.8", "15.8", "18.8"], correct: 1 }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGameState();
+            createParticles();
+            renderLevels();
+            updateUI();
+        });
+
+        // Create background particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const emojis = ['❓', '💡', '⭐', '🎯', '🏆', '📚', '🧠', '✨'];
+
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Load/Save game state
+        function loadGameState() {
+            const saved = localStorage.getItem('quiziGameState');
+            if (saved) {
+                gameState = JSON.parse(saved);
+            }
+        }
+
+        function saveGameState() {
+            localStorage.setItem('quiziGameState', JSON.stringify(gameState));
+        }
+
+        // Show screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            if (screenId === 'gameScreen') {
+                document.querySelector(`[onclick="showScreen('gameScreen')"]`)?.classList.add('active');
+            } else if (screenId === 'shopScreen') {
+                document.querySelectorAll(`[onclick="showScreen('shopScreen')"]`).forEach(el => el.classList.add('active'));
+            }
+
+            updateUI();
+        }
+
+        // Start game from welcome
+        function startGame() {
+            showScreen('gameScreen');
+        }
+
+        // Render level grid
+        function renderLevels() {
+            const grid = document.getElementById('levelsGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 50; i++) {
+                const box = document.createElement('div');
+                box.className = 'level-box';
+
+                const isCompleted = gameState.completedLevels.includes(i);
+                const isUnlocked = i === 1 || gameState.completedLevels.includes(i - 1);
+
+                if (isCompleted) {
+                    box.classList.add('completed');
+                    box.innerHTML = `<span>${i}</span>`;
+                } else if (isUnlocked) {
+                    box.classList.add('unlocked');
+                    box.innerHTML = `<span>${i}</span>`;
+                    box.onclick = () => startLevel(i);
+                } else {
+                    box.classList.add('locked');
+                    box.innerHTML = `<span class="lock-icon">🔒</span>`;
+                }
+
+                grid.appendChild(box);
+            }
+        }
+
+        // Get difficulty info
+        function getDifficulty(level) {
+            if (level <= 10) return { name: 'Kolay', class: 'difficulty-easy', points: 10, time: 30 };
+            if (level <= 20) return { name: 'Orta', class: 'difficulty-medium', points: 20, time: 25 };
+            if (level <= 35) return { name: 'Zor', class: 'difficulty-hard', points: 30, time: 20 };
+            return { name: 'Uzman', class: 'difficulty-expert', points: 50, time: 0 }; // No timer after 25
+        }
+
+        // Start a level
+        function startLevel(level) {
+            gameState.currentLevel = level;
+            currentQuestion = questions[level - 1];
+            answeredCorrectly = false;
+
+            const difficulty = getDifficulty(level);
+
+            // Update question UI
+            document.getElementById('questionNumber').textContent = `Soru ${level}`;
+            document.getElementById('questionText').textContent = currentQuestion.q;
+
+            // Update difficulty badge
+            const badge = document.getElementById('difficultyBadge');
+            badge.textContent = difficulty.name;
+            badge.className = `difficulty-badge ${difficulty.class}`;
+
+            // Render options
+            renderOptions();
+
+            // Timer logic - no timer after question 25
+            const timer = document.getElementById('timer');
+            if (level > 25) {
+                timer.classList.add('hidden');
+                clearInterval(timerInterval);
+            } else {
+                timer.classList.remove('hidden');
+                timeLeft = difficulty.time;
+                document.getElementById('timerValue').textContent = timeLeft;
+                startTimer();
+            }
+
+            // Update joker buttons
+            updateJokerButtons();
+
+            showScreen('questionScreen');
+        }
+
+        // Render options
+        function renderOptions() {
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+
+            currentQuestion.options.forEach((opt, idx) => {
+                const option = document.createElement('div');
+                option.className = 'option';
+                option.innerHTML = `
+                    <span class="option-letter">${letters[idx]}</span>
+                    <span>${opt}</span>
+                `;
+                option.onclick = () => selectOption(idx);
+                grid.appendChild(option);
+            });
+        }
+
+        // Select option
+        function selectOption(index) {
+            if (answeredCorrectly !== false) return;
+
+            clearInterval(timerInterval);
+
+            const options = document.querySelectorAll('.option');
+            const selected = options[index];
+            const correctIndex = currentQuestion.correct;
+            const difficulty = getDifficulty(gameState.currentLevel);
+
+            if (index === correctIndex) {
+                // Correct answer
+                selected.classList.add('correct');
+                answeredCorrectly = true;
+
+                gameState.points += difficulty.points;
+                if (!gameState.completedLevels.includes(gameState.currentLevel)) {
+                    gameState.completedLevels.push(gameState.currentLevel);
+                }
+                saveGameState();
+
+                showResult(true, difficulty.points);
+                createConfetti();
+            } else {
+                // Wrong answer
+                selected.classList.add('wrong');
+                options[correctIndex].classList.add('correct');
+                answeredCorrectly = false;
+
+                // Deduct points
+                const penalty = difficulty.points;
+                gameState.points = Math.max(0, gameState.points - penalty);
+                saveGameState();
+
+                showResult(false, -penalty);
+            }
+
+            options.forEach(o => o.classList.add('disabled'));
+            updateUI();
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerValue').textContent = timeLeft;
+
+                const timer = document.getElementById('timer');
+                if (timeLeft <= 10) {
+                    timer.classList.add('warning');
+                } else {
+                    timer.classList.remove('warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        // Time up
+        function timeUp() {
+            const options = document.querySelectorAll('.option');
+            options[currentQuestion.correct].classList.add('correct');
+            options.forEach(o => o.classList.add('disabled'));
+
+            const difficulty = getDifficulty(gameState.currentLevel);
+            const penalty = difficulty.points;
+            gameState.points = Math.max(0, gameState.points - penalty);
+            saveGameState();
+
+            answeredCorrectly = false;
+            showResult(false, -penalty, true);
+            updateUI();
+        }
+
+        // Show result modal
+        function showResult(success, points, timeExpired = false) {
+            const modal = document.getElementById('resultModal');
+            const emoji = document.getElementById('resultEmoji');
+            const title = document.getElementById('resultTitle');
+            const pointsEl = document.getElementById('resultPoints');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (success) {
+                emoji.textContent = '🎉';
+                title.textContent = 'Doğru!';
+                title.className = 'result-title success';
+                pointsEl.textContent = `+${points} Puan`;
+                pointsEl.className = 'result-points positive';
+                nextBtn.style.display = 'block';
+            } else {
+                emoji.textContent = timeExpired ? '⏰' : '😔';
+                title.textContent = timeExpired ? 'Süre Doldu!' : 'Yanlış!';
+                title.className = 'result-title fail';
+                pointsEl.textContent = `${points} Puan`;
+                pointsEl.className = 'result-points negative';
+                nextBtn.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Next question
+        function nextQuestion() {
+            document.getElementById('resultModal').classList.remove('active');
+
+            if (gameState.currentLevel < 50) {
+                startLevel(gameState.currentLevel + 1);
+            } else {
+                showToast('Tebrikler! Tüm soruları tamamladın! 🏆', 'success');
+                goToMenu();
+            }
+        }
+
+        // Retry question
+        function retryQuestion() {
+            document.getElementById('resultModal').classList.remove('active');
+            startLevel(gameState.currentLevel);
+        }
+
+        // Go to menu
+        function goToMenu() {
+            clearInterval(timerInterval);
+            document.getElementById('resultModal').classList.remove('active');
+            renderLevels();
+            showScreen('gameScreen');
+        }
+
+        // Joker: 50/50
+        function useFiftyFifty() {
+            if (gameState.jokers.fifty <= 0 || answeredCorrectly !== false) return;
+
+            gameState.jokers.fifty--;
+            saveGameState();
+
+            const options = document.querySelectorAll('.option');
+            const correctIndex = currentQuestion.correct;
+
+            // Get wrong options
+            const wrongIndexes = [];
+            for (let i = 0; i < 4; i++) {
+                if (i !== correctIndex) wrongIndexes.push(i);
+            }
+
+            // Eliminate 2 random wrong options
+            wrongIndexes.sort(() => Math.random() - 0.5);
+            options[wrongIndexes[0]].classList.add('eliminated');
+            options[wrongIndexes[1]].classList.add('eliminated');
+
+            updateJokerButtons();
+            showToast('2 yanlış şık elendi! 🎯', 'success');
+        }
+
+        // Joker: Skip
+        function useSkip() {
+            if (gameState.jokers.skip <= 0 || answeredCorrectly !== false) return;
+
+            gameState.jokers.skip--;
+
+            if (!gameState.completedLevels.includes(gameState.currentLevel)) {
+                gameState.completedLevels.push(gameState.currentLevel);
+            }
+            saveGameState();
+
+            clearInterval(timerInterval);
+            showToast('Soru pas geçildi! ⏭️', 'success');
+
+            if (gameState.currentLevel < 50) {
+                startLevel(gameState.currentLevel + 1);
+            } else {
+                goToMenu();
+            }
+        }
+
+        // Joker: Extra Time
+        function useExtraTime() {
+            if (gameState.jokers.time <= 0 || gameState.currentLevel > 25 || answeredCorrectly !== false) return;
+
+            gameState.jokers.time--;
+            saveGameState();
+
+            timeLeft += 30;
+            document.getElementById('timerValue').textContent = timeLeft;
+            document.getElementById('timer').classList.remove('warning');
+
+            updateJokerButtons();
+            showToast('+30 saniye eklendi! ⏰', 'success');
+        }
+
+        // Update joker buttons
+        function updateJokerButtons() {
+            document.getElementById('fiftyCount').textContent = gameState.jokers.fifty;
+            document.getElementById('skipCount').textContent = gameState.jokers.skip;
+            document.getElementById('timeCount').textContent = gameState.jokers.time;
+
+            document.getElementById('jokerFifty').disabled = gameState.jokers.fifty <= 0;
+            document.getElementById('jokerSkip').disabled = gameState.jokers.skip <= 0;
+            document.getElementById('jokerTime').disabled = gameState.jokers.time <= 0 || gameState.currentLevel > 25;
+        }
+
+        // Buy joker
+        function buyJoker(type, cost) {
+            if (gameState.points < cost) {
+                showToast('Yeterli puanın yok! ❌', 'error');
+                return;
+            }
+
+            gameState.points -= cost;
+            gameState.jokers[type]++;
+            saveGameState();
+            updateUI();
+
+            showToast('Joker satın alındı! ✅', 'success');
+        }
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('pointsDisplay').textContent = gameState.points;
+            document.getElementById('questionPointsDisplay').textContent = gameState.points;
+            document.getElementById('shopPointsDisplay').textContent = gameState.points;
+
+            document.getElementById('ownedFifty').textContent = gameState.jokers.fifty;
+            document.getElementById('ownedSkip').textContent = gameState.jokers.skip;
+            document.getElementById('ownedTime').textContent = gameState.jokers.time;
+        }
+
+        // Toast notification
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Confetti effect
+        function createConfetti() {
+            const emojis = ['🎉', '⭐', '✨', '🎊', '💫', '🏆'];
+
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
+        // PWA Install
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => { });
+        }
+    </script>
+</body>
+
+</html>
